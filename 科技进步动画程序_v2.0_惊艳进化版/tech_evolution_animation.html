@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人类科技进步之路 - 从智人到AI时代</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #001428 0%, #002855 50%, #001428 100%);
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFD700;
+            text-align: center;
+        }
+        button {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            color: #001428;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px;
+            margin: 0 5px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="techCanvas"></canvas>
+    <div class="controls">
+        <button onclick="resetAnimation()">重新播放</button>
+        <button onclick="togglePause()">暂停/继续</button>
+        <button onclick="toggleSpeed()">调整速度</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('techCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置画布大小
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 100;
+        
+        // 颜色定义
+        const DEEP_BLUE = '#001428';
+        const GOLD = '#FFD700';
+        const LIGHT_BLUE = '#6495ED';
+        const WHITE = '#FFFFFF';
+        const DARK_GOLD = '#B8860B';
+        const ORANGE = '#FFA500';
+        const GREEN = '#32CD32';
+        
+        // 科技里程碑和对应的科学家
+        const milestones = [
+            {
+                name: "造纸术", 
+                year: "公元105年", 
+                era: "中国四大发明", 
+                x: canvas.width * 0.12, 
+                icon: "paper",
+                scientists: ["蔡伦", "东汉宦官", "造纸术发明者"],
+                evolutionStage: "homo_sapiens"
+            },
+            {
+                name: "印刷术", 
+                year: "公元1041年", 
+                era: "中国四大发明", 
+                x: canvas.width * 0.24, 
+                icon: "printing",
+                scientists: ["毕昇", "活字印刷发明者", "宋代工匠"],
+                evolutionStage: "medieval_human"
+            },
+            {
+                name: "火药", 
+                year: "9世纪", 
+                era: "中国四大发明", 
+                x: canvas.width * 0.36, 
+                icon: "gunpowder",
+                scientists: ["孙思邈", "炼丹术士", "唐代医学家"],
+                evolutionStage: "medieval_human"
+            },
+            {
+                name: "指南针", 
+                year: "11世纪", 
+                era: "中国四大发明", 
+                x: canvas.width * 0.48, 
+                icon: "compass",
+                scientists: ["沈括", "《梦溪笔谈》作者", "北宋科学家"],
+                evolutionStage: "renaissance_human"
+            },
+            {
+                name: "蒸汽机", 
+                year: "1769年", 
+                era: "工业革命", 
+                x: canvas.width * 0.6, 
+                icon: "steam",
+                scientists: ["詹姆斯·瓦特", "工业革命先驱", "苏格兰发明家"],
+                evolutionStage: "industrial_human"
+            },
+            {
+                name: "内燃机", 
+                year: "1876年", 
+                era: "第二次工业革命", 
+                x: canvas.width * 0.72, 
+                icon: "engine",
+                scientists: ["尼古拉斯·奥托", "卡尔·本茨", "戈特利布·戴姆勒"],
+                evolutionStage: "modern_human"
+            },
+            {
+                name: "计算机", 
+                year: "1946年", 
+                era: "信息时代", 
+                x: canvas.width * 0.84, 
+                icon: "computer",
+                scientists: ["冯·诺依曼", "图灵", "香农"],
+                evolutionStage: "digital_human"
+            },
+            {
+                name: "人工智能", 
+                year: "2020年代", 
+                era: "智能时代", 
+                x: canvas.width * 0.92, 
+                icon: "ai",
+                scientists: ["杰弗里·辛顿", "扬·勒昆", "约书亚·本吉奥"],
+                evolutionStage: "ai_human"
+            }
+        ];
+        
+        // 人类进化行走动画类
+        class EvolutionWalker {
+            constructor() {
+                this.x = 50;
+                this.y = canvas.height * 0.7;
+                this.targetX = 50;
+                this.speed = 2;
+                this.walkCycle = 0;
+                this.currentStage = 'homo_sapiens';
+                this.isWalking = false;
+                this.scale = 1;
+                this.glowIntensity = 0;
+            }
+            
+            moveTo(targetX) {
+                this.targetX = targetX;
+                this.isWalking = true;
+                this.glowIntensity = 1;
+            }
+            
+            update() {
+                if (this.isWalking) {
+                    const dx = this.targetX - this.x;
+                    if (Math.abs(dx) > 2) {
+                        this.x += Math.sign(dx) * this.speed;
+                        this.walkCycle += 0.2;
+                    } else {
+                        this.x = this.targetX;
+                        this.isWalking = false;
+                        this.walkCycle = 0;
+                    }
+                }
+                
+                // 光晕效果衰减
+                if (this.glowIntensity > 0) {
+                    this.glowIntensity -= 0.02;
+                }
+            }
+            
+            evolve(stage) {
+                this.currentStage = stage;
+                this.scale = 1.2; // 进化时放大
+                setTimeout(() => {
+                    this.scale = 1;
+                }, 500);
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.scale, this.scale);
+                
+                // 绘制光晕效果
+                if (this.glowIntensity > 0) {
+                    for (let i = 0; i < 5; i++) {
+                        ctx.save();
+                        ctx.globalAlpha = this.glowIntensity * (0.3 - i * 0.05);
+                        ctx.strokeStyle = GOLD;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(0, -30, 20 + i * 5, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+                
+                // 根据进化阶段绘制不同的人形
+                this.drawEvolutionStage();
+                
+                ctx.restore();
+            }
+            
+            drawEvolutionStage() {
+                const legOffset = this.isWalking ? Math.sin(this.walkCycle) * 5 : 0;
+                const armOffset = this.isWalking ? Math.cos(this.walkCycle) * 3 : 0;
+                
+                switch(this.currentStage) {
+                    case 'homo_sapiens':
+                        this.drawPrimitiveHuman(legOffset, armOffset);
+                        break;
+                    case 'medieval_human':
+                        this.drawMedievalHuman(legOffset, armOffset);
+                        break;
+                    case 'renaissance_human':
+                        this.drawRenaissanceHuman(legOffset, armOffset);
+                        break;
+                    case 'industrial_human':
+                        this.drawIndustrialHuman(legOffset, armOffset);
+                        break;
+                    case 'modern_human':
+                        this.drawModernHuman(legOffset, armOffset);
+                        break;
+                    case 'digital_human':
+                        this.drawDigitalHuman(legOffset, armOffset);
+                        break;
+                    case 'ai_human':
+                        this.drawAIHuman(legOffset, armOffset);
+                        break;
+                }
+            }
+            
+            drawPrimitiveHuman(legOffset, armOffset) {
+                // 原始人 - 弯腰驼背，手持工具
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 3;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 身体（弯曲）
+                ctx.beginPath();
+                ctx.moveTo(0, -42);
+                ctx.quadraticCurveTo(5, -25, 10, -10);
+                ctx.stroke();
+                
+                // 手臂（一只手持工具）
+                ctx.beginPath();
+                ctx.moveTo(5, -35);
+                ctx.lineTo(-10 + armOffset, -20);
+                ctx.moveTo(5, -30);
+                ctx.lineTo(15 - armOffset, -15);
+                ctx.stroke();
+                
+                // 工具（石头）
+                ctx.fillStyle = '#696969';
+                ctx.fillRect(-12 + armOffset, -22, 4, 4);
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(10, -10);
+                ctx.lineTo(5 + legOffset, 0);
+                ctx.moveTo(10, -10);
+                ctx.lineTo(15 - legOffset, 0);
+                ctx.stroke();
+            }
+            
+            drawMedievalHuman(legOffset, armOffset) {
+                // 中世纪人 - 直立，穿长袍
+                ctx.strokeStyle = '#4B0082';
+                ctx.lineWidth = 3;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 身体
+                ctx.strokeRect(-8, -42, 16, 30);
+                
+                // 手臂
+                ctx.beginPath();
+                ctx.moveTo(-8, -35);
+                ctx.lineTo(-15 + armOffset, -20);
+                ctx.moveTo(8, -35);
+                ctx.lineTo(15 - armOffset, -20);
+                ctx.stroke();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(-4, -12);
+                ctx.lineTo(-8 + legOffset, 0);
+                ctx.moveTo(4, -12);
+                ctx.lineTo(8 - legOffset, 0);
+                ctx.stroke();
+            }
+            
+            drawRenaissanceHuman(legOffset, armOffset) {
+                // 文艺复兴人 - 优雅姿态
+                ctx.strokeStyle = '#800080';
+                ctx.lineWidth = 3;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 身体
+                ctx.beginPath();
+                ctx.moveTo(0, -42);
+                ctx.lineTo(0, -15);
+                ctx.stroke();
+                
+                // 手臂（优雅姿势）
+                ctx.beginPath();
+                ctx.moveTo(0, -35);
+                ctx.lineTo(-12 + armOffset, -25);
+                ctx.lineTo(-10, -15);
+                ctx.moveTo(0, -35);
+                ctx.lineTo(12 - armOffset, -25);
+                ctx.lineTo(10, -15);
+                ctx.stroke();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(0, -15);
+                ctx.lineTo(-6 + legOffset, 0);
+                ctx.moveTo(0, -15);
+                ctx.lineTo(6 - legOffset, 0);
+                ctx.stroke();
+                
+                // 帽子
+                ctx.beginPath();
+                ctx.arc(0, -58, 10, Math.PI, 0);
+                ctx.stroke();
+            }
+            
+            drawIndustrialHuman(legOffset, armOffset) {
+                // 工业时代人 - 戴帽子，挺拔
+                ctx.strokeStyle = '#2F4F4F';
+                ctx.lineWidth = 3;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 帽子（工业帽）
+                ctx.strokeRect(-10, -60, 20, 8);
+                
+                // 身体
+                ctx.strokeRect(-6, -42, 12, 28);
+                
+                // 手臂
+                ctx.beginPath();
+                ctx.moveTo(-6, -35);
+                ctx.lineTo(-12 + armOffset, -22);
+                ctx.moveTo(6, -35);
+                ctx.lineTo(12 - armOffset, -22);
+                ctx.stroke();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(-3, -14);
+                ctx.lineTo(-6 + legOffset, 0);
+                ctx.moveTo(3, -14);
+                ctx.lineTo(6 - legOffset, 0);
+                ctx.stroke();
+                
+                // 工具（扳手）
+                ctx.strokeStyle = '#C0C0C0';
+                ctx.beginPath();
+                ctx.moveTo(12 - armOffset, -22);
+                ctx.lineTo(16 - armOffset, -18);
+                ctx.stroke();
+            }
+            
+            drawModernHuman(legOffset, armOffset) {
+                // 现代人 - 西装革履
+                ctx.strokeStyle = '#000080';
+                ctx.lineWidth = 3;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 身体（西装）
+                ctx.strokeRect(-7, -42, 14, 30);
+                
+                // 领带
+                ctx.strokeStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.moveTo(0, -42);
+                ctx.lineTo(0, -20);
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#000080';
+                
+                // 手臂
+                ctx.beginPath();
+                ctx.moveTo(-7, -35);
+                ctx.lineTo(-13 + armOffset, -25);
+                ctx.moveTo(7, -35);
+                ctx.lineTo(13 - armOffset, -25);
+                ctx.stroke();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(-3, -12);
+                ctx.lineTo(-6 + legOffset, 0);
+                ctx.moveTo(3, -12);
+                ctx.lineTo(6 - legOffset, 0);
+                ctx.stroke();
+                
+                // 公文包
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(13 - armOffset, -28, 6, 4);
+            }
+            
+            drawDigitalHuman(legOffset, armOffset) {
+                // 数字时代人 - 带电子设备
+                ctx.strokeStyle = '#4169E1';
+                ctx.lineWidth = 3;
+                
+                // 头部
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 身体
+                ctx.strokeRect(-6, -42, 12, 28);
+                
+                // 手臂
+                ctx.beginPath();
+                ctx.moveTo(-6, -35);
+                ctx.lineTo(-12 + armOffset, -25);
+                ctx.moveTo(6, -35);
+                ctx.lineTo(12 - armOffset, -25);
+                ctx.stroke();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(-3, -14);
+                ctx.lineTo(-6 + legOffset, 0);
+                ctx.moveTo(3, -14);
+                ctx.lineTo(6 - legOffset, 0);
+                ctx.stroke();
+                
+                // 手机
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(-14 + armOffset, -27, 3, 5);
+                
+                // 屏幕光
+                ctx.fillStyle = '#00FFFF';
+                ctx.fillRect(-13 + armOffset, -26, 1, 3);
+                
+                // 耳机
+                ctx.strokeStyle = '#FF69B4';
+                ctx.beginPath();
+                ctx.arc(0, -50, 12, 0.3, 2.8);
+                ctx.stroke();
+            }
+            
+            drawAIHuman(legOffset, armOffset) {
+                // AI时代人 - 半机械化，发光效果
+                ctx.strokeStyle = GOLD;
+                ctx.lineWidth = 3;
+                
+                // 头部（发光）
+                ctx.save();
+                ctx.shadowColor = GOLD;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(0, -50, 8, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+                
+                // 身体（带电路纹理）
+                ctx.strokeRect(-6, -42, 12, 28);
+                
+                // 电路纹理
+                ctx.strokeStyle = LIGHT_BLUE;
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-4, -35 + i * 8);
+                    ctx.lineTo(4, -35 + i * 8);
+                    ctx.stroke();
+                }
+                
+                ctx.strokeStyle = GOLD;
+                ctx.lineWidth = 3;
+                
+                // 手臂（机械关节）
+                ctx.beginPath();
+                ctx.moveTo(-6, -35);
+                ctx.lineTo(-12 + armOffset, -25);
+                ctx.moveTo(6, -35);
+                ctx.lineTo(12 - armOffset, -25);
+                ctx.stroke();
+                
+                // 机械关节
+                ctx.fillStyle = GOLD;
+                ctx.beginPath();
+                ctx.arc(-6, -35, 2, 0, Math.PI * 2);
+                ctx.arc(6, -35, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 腿部
+                ctx.beginPath();
+                ctx.moveTo(-3, -14);
+                ctx.lineTo(-6 + legOffset, 0);
+                ctx.moveTo(3, -14);
+                ctx.lineTo(6 - legOffset, 0);
+                ctx.stroke();
+                
+                // 全息投影设备
+                ctx.strokeStyle = '#00FFFF';
+                ctx.strokeRect(12 - armOffset, -28, 4, 3);
+                
+                // 全息光束
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                ctx.strokeStyle = '#00FFFF';
+                ctx.beginPath();
+                ctx.moveTo(14 - armOffset, -25);
+                ctx.lineTo(20 - armOffset, -35);
+                ctx.lineTo(25 - armOffset, -30);
+                ctx.lineTo(22 - armOffset, -25);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+        
+        // 科学家名字显示类
+        class ScientistDisplay {
+            constructor() {
+                this.scientists = [];
+                this.displayTime = 0;
+                this.fadeAlpha = 0;
+            }
+            
+            show(scientistNames, x, y) {
+                this.scientists = scientistNames;
+                this.x = x;
+                this.y = y;
+                this.displayTime = 300; // 5秒显示时间
+                this.fadeAlpha = 0;
+            }
+            
+            update() {
+                if (this.displayTime > 0) {
+                    this.displayTime--;
+                    
+                    // 淡入淡出效果
+                    if (this.displayTime > 240) {
+                        this.fadeAlpha = Math.min(1, this.fadeAlpha + 0.05);
+                    } else if (this.displayTime < 60) {
+                        this.fadeAlpha = Math.max(0, this.fadeAlpha - 0.02);
+                    }
+                }
+            }
+            
+            draw() {
+                if (this.displayTime > 0 && this.fadeAlpha > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = this.fadeAlpha;
+                    
+                    // 背景框
+                    const boxWidth = 200;
+                    const boxHeight = this.scientists.length * 25 + 20;
+                    const boxX = this.x - boxWidth / 2;
+                    const boxY = this.y - 150;
+                    
+                    // 渐变背景
+                    const gradient = ctx.createLinearGradient(boxX, boxY, boxX, boxY + boxHeight);
+                    gradient.addColorStop(0, 'rgba(0, 20, 40, 0.9)');
+                    gradient.addColorStop(1, 'rgba(0, 40, 80, 0.9)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+                    
+                    // 边框
+                    ctx.strokeStyle = GOLD;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+                    
+                    // 科学家名字
+                    ctx.textAlign = 'center';
+                    this.scientists.forEach((scientist, index) => {
+                        if (index === 0) {
+                            ctx.font = 'bold 18px Microsoft YaHei';
+                            ctx.fillStyle = GOLD;
+                        } else {
+                            ctx.font = '14px Microsoft YaHei';
+                            ctx.fillStyle = WHITE;
+                        }
+                        ctx.fillText(scientist, this.x, boxY + 25 + index * 25);
+                    });
+                    
+                    // 装饰星星
+                    for (let i = 0; i < 5; i++) {
+                        const starX = boxX + 20 + i * 40;
+                        const starY = boxY - 10;
+                        this.drawStar(starX, starY, 3, GOLD);
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+            
+            drawStar(x, y, size, color) {
+                ctx.save();
+                ctx.fillStyle = color;
+                ctx.translate(x, y);
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    ctx.lineTo(Math.cos((18 + i * 72) / 180 * Math.PI) * size,
+                              -Math.sin((18 + i * 72) / 180 * Math.PI) * size);
+                    ctx.lineTo(Math.cos((54 + i * 72) / 180 * Math.PI) * size / 2,
+                              -Math.sin((54 + i * 72) / 180 * Math.PI) * size / 2);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 粒子类
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.life = 100;
+                this.color = Math.random() > 0.5 ? GOLD : LIGHT_BLUE;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 1;
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+            }
+            
+            draw() {
+                const alpha = this.life / 100;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3 * alpha, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 数据流类
+        class DataFlow {
+            constructor(startX, startY, endX, endY) {
+                this.startX = startX;
+                this.startY = startY;
+                this.endX = endX;
+                this.endY = endY;
+                this.progress = 0;
+                this.speed = 0.01 + Math.random() * 0.02;
+                this.color = Math.random() > 0.5 ? GOLD : LIGHT_BLUE;
+            }
+            
+            update() {
+                this.progress += this.speed;
+                if (this.progress > 1) {
+                    this.progress = 0;
+                }
+            }
+            
+            draw() {
+                if (this.progress > 0) {
+                    const currentX = this.startX + (this.endX - this.startX) * this.progress;
+                    const currentY = this.startY + (this.endY - this.startY) * this.progress;
+                    
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(currentX, currentY, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 绘制轨迹
+                    for (let i = 0; i < 5; i++) {
+                        const trailProgress = this.progress - i * 0.05;
+                        if (trailProgress > 0) {
+                            const trailX = this.startX + (this.endX - this.startX) * trailProgress;
+                            const trailY = this.startY + (this.endY - this.startY) * trailProgress;
+                            const radius = 2 * (1 - i/5);
+                            
+                            ctx.save();
+                            ctx.globalAlpha = 1 - i/5;
+                            ctx.beginPath();
+                            ctx.arc(trailX, trailY, radius, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 背景粒子
+        const backgroundParticles = [];
+        for (let i = 0; i < 50; i++) {
+            backgroundParticles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                speed: 0.1 + Math.random() * 0.4,
+                size: Math.random() * 2 + 1
+            });
+        }
+        
+        // 动画状态
+        let animationTime = 0;
+        let currentNode = 0;
+        let activeNodes = [];
+        let particles = [];
+        let dataFlows = [];
+        let isPaused = false;
+        let showEnding = false;
+        let endingAlpha = 0;
+        let showEndingTimer = -1;
+        let animationSpeed = 1;
+        
+        // 创建进化行走者和科学家显示
+        const evolutionWalker = new EvolutionWalker();
+        const scientistDisplay = new ScientistDisplay();
+        
+        // 图标绘制类
+        class IconDrawer {
+            static drawPaper(ctx, x, y, size, color) {
+                // 绘制纸张轮廓
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - size/2, y - size/2, size, size * 1.4);
+                
+                // 绘制纸张的折角
+                const cornerSize = size / 4;
+                ctx.beginPath();
+                ctx.moveTo(x + size/2, y - size/2);
+                ctx.lineTo(x + size/2 - cornerSize, y - size/2);
+                ctx.lineTo(x + size/2, y - size/2 + cornerSize);
+                ctx.closePath();
+                ctx.stroke();
+                
+                // 绘制文字线条
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const lineY = y - size/4 + i * size/4;
+                    ctx.beginPath();
+                    ctx.moveTo(x - size/3, lineY);
+                    ctx.lineTo(x + size/3, lineY);
+                    ctx.stroke();
+                }
+            }
+            
+            static drawPrinting(ctx, x, y, size, color) {
+                // 绘制印章外框
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - size/2, y - size/2, size, size);
+                
+                // 绘制印章内部的字符
+                ctx.fillStyle = color;
+                const innerSize = size / 3;
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < 2; j++) {
+                        const rectX = x - size/3 + i * innerSize;
+                        const rectY = y - size/3 + j * innerSize;
+                        ctx.fillRect(rectX, rectY, innerSize - 5, innerSize - 5);
+                    }
+                }
+            }
+            
+            static drawGunpowder(ctx, x, y, size, color) {
+                // 绘制爆炸的星形
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                for (let angle = 0; angle < 360; angle += 30) {
+                    const rad = angle * Math.PI / 180;
+                    const innerR = size / 3;
+                    const outerR = size / 1.5;
+                    const r = angle % 60 === 0 ? outerR : innerR;
+                    const endX = x + r * Math.cos(rad);
+                    const endY = y + r * Math.sin(rad);
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                }
+                // 中心圆
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, size / 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            static drawCompass(ctx, x, y, size, color) {
+                // 外圆
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 指针
+                const needleLength = size / 2 - 5;
+                
+                // 北针（红色部分）
+                ctx.fillStyle = '#FF6464';
+                ctx.beginPath();
+                ctx.moveTo(x, y - needleLength);
+                ctx.lineTo(x - size/8, y);
+                ctx.lineTo(x, y - size/8);
+                ctx.lineTo(x + size/8, y);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 南针
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x, y + needleLength);
+                ctx.lineTo(x - size/8, y);
+                ctx.lineTo(x, y + size/8);
+                ctx.lineTo(x + size/8, y);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 中心点
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            static drawSteam(ctx, x, y, size, color) {
+                // 绘制锅炉
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - size/3, y - size/4, size/1.5, size/2);
+                
+                // 绘制烟囱
+                ctx.strokeRect(x - size/6, y - size/2, size/6, size/4);
+                
+                // 绘制蒸汽（云朵）
+                ctx.strokeStyle = LIGHT_BLUE;
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const steamY = y - size/2 - i * 10;
+                    const steamX = x - size/12 + (i % 2) * 5;
+                    ctx.beginPath();
+                    ctx.arc(steamX, steamY, 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                // 绘制轮子
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                const wheelY = y + size/4;
+                ctx.beginPath();
+                ctx.arc(x - size/4, wheelY, size/6, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(x + size/4, wheelY, size/6, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            static drawEngine(ctx, x, y, size, color) {
+                // 绘制气缸
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - size/4, y - size/2, size/2, size);
+                
+                // 绘制活塞
+                const pistonY = y - size/4;
+                ctx.fillStyle = color;
+                ctx.fillRect(x - size/5, pistonY, size/2.5, size/4);
+                
+                // 绘制连杆
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x, pistonY + size/8);
+                ctx.lineTo(x, y + size/3);
+                ctx.stroke();
+                
+                // 绘制曲轴
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y + size/3, size/8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            static drawComputer(ctx, x, y, size, color) {
+                // 显示器
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - size/2, y - size/2, size, size/1.5);
+                
+                // 屏幕
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x - size/2 + 5, y - size/2 + 5, size - 10, size/2);
+                
+                // 底座
+                ctx.fillStyle = color;
+                ctx.fillRect(x - size/6, y + size/6, size/3, size/8);
+                ctx.fillRect(x - size/4, y + size/4, size/2, size/10);
+                
+                // 屏幕上的代码线
+                ctx.strokeStyle = '#64FF64';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const lineY = y - size/3 + i * 10;
+                    ctx.beginPath();
+                    ctx.moveTo(x - size/3, lineY);
+                    ctx.lineTo(x - size/6, lineY);
+                    ctx.stroke();
+                }
+                ctx.strokeStyle = LIGHT_BLUE;
+                for (let i = 0; i < 3; i++) {
+                    const lineY = y - size/3 + i * 10;
+                    ctx.beginPath();
+                    ctx.moveTo(x - size/8, lineY);
+                    ctx.lineTo(x + size/6, lineY);
+                    ctx.stroke();
+                }
+            }
+            
+            static drawAI(ctx, x, y, size, color) {
+                // 绘制大脑轮廓
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                
+                // 绘制大脑的主体轮廓
+                ctx.beginPath();
+                ctx.arc(x, y - size/6, size/2.5, 0, Math.PI, true);
+                ctx.stroke();
+                
+                // 绘制大脑的左右半球分界线
+                ctx.beginPath();
+                ctx.moveTo(x, y - size/2.5);
+                ctx.lineTo(x, y + size/6);
+                ctx.stroke();
+                
+                // 绘制神经网络节点
+                const layers = 3;
+                const nodesPerLayer = [2, 3, 2];
+                const nodePositions = [];
+                
+                // 计算节点位置
+                for (let layer = 0; layer < layers; layer++) {
+                    const layerX = x - size/4 + layer * size/4;
+                    const numNodes = nodesPerLayer[layer];
+                    const layerNodes = [];
+                    for (let node = 0; node < numNodes; node++) {
+                        const nodeY = y - size/6 + node * (size/3) / Math.max(1, numNodes - 1);
+                        layerNodes.push({x: layerX, y: nodeY});
+                        // 绘制节点
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(layerX, nodeY, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    nodePositions.push(layerNodes);
+                }
+                
+                // 绘制连接线
+                ctx.strokeStyle = LIGHT_BLUE;
+                ctx.lineWidth = 1;
+                for (let layer = 0; layer < layers - 1; layer++) {
+                    for (let node1 of nodePositions[layer]) {
+                        for (let node2 of nodePositions[layer + 1]) {
+                            ctx.save();
+                            ctx.globalAlpha = 0.6;
+                            ctx.beginPath();
+                            ctx.moveTo(node1.x, node1.y);
+                            ctx.lineTo(node2.x, node2.y);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+                
+                // 绘制AI标识 - 电路板风格的装饰
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                
+                // 绘制几条电路线
+                const circuitLines = [
+                    {start: {x: x - size/3, y: y + size/4}, end: {x: x + size/3, y: y + size/4}},
+                    {start: {x: x - size/4, y: y + size/3}, end: {x: x + size/4, y: y + size/3}},
+                ];
+                
+                circuitLines.forEach(line => {
+                    ctx.beginPath();
+                    ctx.moveTo(line.start.x, line.start.y);
+                    ctx.lineTo(line.end.x, line.end.y);
+                    ctx.stroke();
+                    
+                    // 在线上添加小方块表示电路元件
+                    const midX = (line.start.x + line.end.x) / 2;
+                    const midY = (line.start.y + line.end.y) / 2;
+                    ctx.fillStyle = color;
+                    ctx.fillRect(midX - 2, midY - 2, 4, 4);
+                });
+            }
+        }
+        
+        // 绘制背景
+        function drawBackground() {
+            // 渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#001428');
+            gradient.addColorStop(0.5, '#002855');
+            gradient.addColorStop(1, '#001428');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景粒子
+            ctx.fillStyle = LIGHT_BLUE;
+            backgroundParticles.forEach(particle => {
+                particle.x += particle.speed;
+                if (particle.x > canvas.width) {
+                    particle.x = 0;
+                    particle.y = Math.random() * canvas.height;
+                }
+                ctx.save();
+                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+            
+            // 绘制星空效果
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137.5) % canvas.width;
+                const y = (i * 73.3) % canvas.height;
+                const brightness = Math.sin(animationTime * 0.01 + i) * 0.5 + 0.5;
+                ctx.save();
+                ctx.globalAlpha = brightness * 0.3;
+                ctx.fillStyle = WHITE;
+                ctx.beginPath();
+                ctx.arc(x, y, 1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 绘制进化时间轴
+        function drawEvolutionTimeline() {
+            const timelineY = canvas.height * 0.5;
+            
+            // 主时间轴
+            ctx.strokeStyle = GOLD;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(50, timelineY);
+            ctx.lineTo(canvas.width - 50, timelineY);
+            ctx.stroke();
+            
+            // 时间轴装饰波纹
+            ctx.strokeStyle = LIGHT_BLUE;
+            ctx.lineWidth = 2;
+            for (let x = 50; x < canvas.width - 50; x += 20) {
+                const waveY = timelineY + Math.sin(animationTime * 0.02 + x * 0.01) * 8;
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.arc(x, waveY, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            
+            // 绘制进化足迹
+            if (activeNodes.length > 0) {
+                ctx.strokeStyle = ORANGE;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(50, timelineY + 20);
+                for (let i = 0; i < activeNodes.length; i++) {
+                    const milestone = milestones[activeNodes[i]];
+                    ctx.lineTo(milestone.x, timelineY + 20);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // 绘制标题
+        function drawTitle() {
+            ctx.save();
+            
+            // 主标题
+            ctx.font = 'bold 52px Microsoft YaHei';
+            ctx.fillStyle = GOLD;
+            ctx.textAlign = 'center';
+            ctx.shadowColor = GOLD;
+            ctx.shadowBlur = 20;
+            ctx.globalAlpha = 0.9 + 0.1 * Math.sin(animationTime * 0.03);
+            ctx.fillText('人类科技进步之路', canvas.width / 2, 70);
+            
+            // 副标题
+            ctx.font = '28px Microsoft YaHei';
+            ctx.fillStyle = WHITE;
+            ctx.shadowBlur = 10;
+            ctx.globalAlpha = 1;
+            ctx.fillText('从智人到AI时代的伟大征程', canvas.width / 2, 110);
+            
+            // 进化阶段指示器
+            if (currentNode > 0) {
+                const currentMilestone = milestones[currentNode - 1];
+                ctx.font = '20px Microsoft YaHei';
+                ctx.fillStyle = LIGHT_BLUE;
+                ctx.shadowBlur = 5;
+                ctx.fillText(`当前阶段: ${currentMilestone.era}`, canvas.width / 2, 140);
+            }
+            
+            ctx.restore();
+        }
+        
+        // 绘制节点
+        function drawNode(milestone, index, isActive) {
+            const y = canvas.height / 2;
+            const iconSize = 60;
+            
+            if (isActive) {
+                // 绘制激活光晕
+                const glowRadius = iconSize / 2 + 15 * Math.sin(animationTime * 0.08 + index);
+                for (let i = 0; i < 8; i++) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.4 - i * 0.05;
+                    ctx.strokeStyle = i % 2 === 0 ? GOLD : LIGHT_BLUE;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(milestone.x, y, glowRadius + i * 3, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                // 能量脉冲效果
+                const pulseRadius = 30 + 20 * Math.sin(animationTime * 0.1 + index);
+                ctx.save();
+                ctx.globalAlpha = 0.3;
+                ctx.strokeStyle = GOLD;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(milestone.x, y, pulseRadius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // 绘制图标背景
+            ctx.save();
+            ctx.globalAlpha = 0.9;
+            const bgGradient = ctx.createRadialGradient(milestone.x, y, 0, milestone.x, y, iconSize/2);
+            bgGradient.addColorStop(0, 'rgba(0, 20, 40, 0.8)');
+            bgGradient.addColorStop(1, 'rgba(0, 40, 80, 0.9)');
+            ctx.fillStyle = bgGradient;
+            ctx.beginPath();
+            ctx.arc(milestone.x, y, iconSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 根据类型绘制图标
+            const iconColor = isActive ? GOLD : DARK_GOLD;
+            
+            // 修复图标方法调用
+            switch(milestone.icon) {
+                case 'paper':
+                    IconDrawer.drawPaper(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'printing':
+                    IconDrawer.drawPrinting(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'gunpowder':
+                    IconDrawer.drawGunpowder(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'compass':
+                    IconDrawer.drawCompass(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'steam':
+                    IconDrawer.drawSteam(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'engine':
+                    IconDrawer.drawEngine(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'computer':
+                    IconDrawer.drawComputer(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                case 'ai':
+                    IconDrawer.drawAI(ctx, milestone.x, y, iconSize, iconColor);
+                    break;
+                default:
+                    // 默认绘制圆点
+                    ctx.fillStyle = iconColor;
+                    ctx.beginPath();
+                    ctx.arc(milestone.x, y, iconSize / 4, 0, Math.PI * 2);
+                    ctx.fill();
+            }
+            
+            // 绘制文字信息
+            if (isActive) {
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowBlur = 5;
+                
+                // 发明名称
+                ctx.fillStyle = WHITE;
+                ctx.font = 'bold 22px Microsoft YaHei';
+                ctx.fillText(milestone.name, milestone.x, y - iconSize - 25);
+                
+                // 年代
+                ctx.fillStyle = GOLD;
+                ctx.font = '18px Microsoft YaHei';
+                ctx.fillText(milestone.year, milestone.x, y + iconSize + 25);
+                
+                // 时代
+                ctx.fillStyle = LIGHT_BLUE;
+                ctx.font = '16px Microsoft YaHei';
+                ctx.fillText(milestone.era, milestone.x, y + iconSize + 45);
+                
+                ctx.restore();
+            }
+        }
+        
+        // 主动画循环
+        function animate() {
+            if (!isPaused) {
+                animationTime += animationSpeed;
+                
+                // 清除画布
+                drawBackground();
+                drawEvolutionTimeline();
+                drawTitle();
+                
+                // 激活节点逻辑
+                const nodeActivationInterval = Math.floor(180 / animationSpeed);
+                if (animationTime % nodeActivationInterval === 0 && currentNode < milestones.length) {
+                    activeNodes.push(currentNode);
+                    
+                    const milestone = milestones[currentNode];
+                    
+                    // 移动进化行走者到新位置
+                    evolutionWalker.moveTo(milestone.x);
+                    evolutionWalker.evolve(milestone.evolutionStage);
+                    
+                    // 显示科学家信息
+                    scientistDisplay.show(milestone.scientists, milestone.x, canvas.height / 2);
+                    
+                    // 创建粒子爆发效果
+                    for (let i = 0; i < 30; i++) {
+                        particles.push(new Particle(
+                            milestone.x, 
+                            canvas.height / 2
+                        ));
+                    }
+                    
+                    // 创建数据流
+                    if (currentNode > 0) {
+                        for (let i = 0; i < 5; i++) {
+                            dataFlows.push(new DataFlow(
+                                milestones[currentNode - 1].x, canvas.height / 2,
+                                milestone.x, canvas.height / 2
+                            ));
+                        }
+                    }
+                    
+                    currentNode++;
+                    
+                    // 如果所有节点都激活了，设置显示结尾的计时器
+                    if (currentNode >= milestones.length) {
+                        showEndingTimer = Math.floor(240 / animationSpeed);
+                    }
+                }
+                
+                // 检查是否显示结尾
+                if (showEndingTimer > 0) {
+                    showEndingTimer--;
+                    if (showEndingTimer === 0) {
+                        showEnding = true;
+                    }
+                }
+                
+                // 更新结尾画面的透明度
+                if (showEnding && endingAlpha < 1) {
+                    endingAlpha = Math.min(1, endingAlpha + 0.01 * animationSpeed);
+                }
+                
+                // 绘制连接线
+                ctx.strokeStyle = LIGHT_BLUE;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([10, 5]);
+                for (let i = 1; i < activeNodes.length; i++) {
+                    const prev = milestones[activeNodes[i - 1]];
+                    const curr = milestones[activeNodes[i]];
+                    
+                    ctx.save();
+                    ctx.globalAlpha = 0.7;
+                    ctx.beginPath();
+                    ctx.moveTo(prev.x, canvas.height / 2);
+                    ctx.lineTo(curr.x, canvas.height / 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                ctx.setLineDash([]);
+                
+                // 更新和绘制各种元素
+                evolutionWalker.update();
+                scientistDisplay.update();
+                
+                // 更新和绘制数据流
+                dataFlows.forEach(flow => {
+                    flow.update();
+                    flow.draw();
+                });
+                
+                // 更新和绘制粒子
+                particles = particles.filter(particle => particle.life > 0);
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                
+                // 绘制所有节点
+                milestones.forEach((milestone, index) => {
+                    drawNode(milestone, index, activeNodes.includes(index));
+                });
+                
+                // 绘制进化行走者
+                evolutionWalker.draw();
+                
+                // 绘制科学家信息
+                scientistDisplay.draw();
+                
+                // 绘制结尾
+                drawEnding();
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 绘制结尾致敬画面
+        function drawEnding() {
+            if (showEnding) {
+                // 半透明黑色遮罩
+                ctx.save();
+                ctx.fillStyle = `rgba(0, 0, 0, ${endingAlpha * 0.85})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.globalAlpha = endingAlpha;
+                
+                // 主标题
+                ctx.font = 'bold 56px Microsoft YaHei';
+                ctx.fillStyle = GOLD;
+                ctx.textAlign = 'center';
+                ctx.shadowColor = GOLD;
+                ctx.shadowBlur = 30;
+                ctx.fillText('致敬每一次不甘于平凡的创新', canvas.width / 2, canvas.height / 2 - 60);
+                
+                // 副标题
+                ctx.font = '28px Microsoft YaHei';
+                ctx.fillStyle = WHITE;
+                ctx.shadowBlur = 15;
+                ctx.fillText('从古至今，人类文明的每一次飞跃', canvas.width / 2, canvas.height / 2 + 10);
+                ctx.fillText('都源于那些敢于突破、勇于创新的伟大灵魂', canvas.width / 2, canvas.height / 2 + 50);
+                
+                // 绘制装饰性的创新火花和进化轨迹
+                if (endingAlpha > 0.8) {
+                    const sparkAlpha = (endingAlpha - 0.8) * 5;
+                    ctx.globalAlpha = sparkAlpha;
+                    
+                    const sparkCount = 30;
+                    for (let i = 0; i < sparkCount; i++) {
+                        const angle = (i / sparkCount) * Math.PI * 2 + animationTime * 0.005;
+                        const radius = 250 + 80 * Math.sin(animationTime * 0.01 + i);
+                        const x = canvas.width / 2 + radius * Math.cos(angle);
+                        const y = canvas.height / 2 + radius * Math.sin(angle) * 0.6;
+                        
+                        // 绘制进化足迹
+                        const evolutionStages = ['🐒', '🚶', '👨‍🔬', '🤖'];
+                        const stageIndex = Math.floor(i / (sparkCount / 4));
+                        
+                        ctx.font = '24px Arial';
+                        ctx.fillStyle = GOLD;
+                        if (stageIndex < evolutionStages.length) {
+                            ctx.fillText(evolutionStages[stageIndex], x, y);
+                        }
+                        
+                        // 绘制连接线
+                        if (i % 4 === 0) {
+                            const nextI = (i + 4) % sparkCount;
+                            const nextAngle = (nextI / sparkCount) * Math.PI * 2 + animationTime * 0.005;
+                            const nextRadius = 250 + 80 * Math.sin(animationTime * 0.01 + nextI);
+                            const nextX = canvas.width / 2 + nextRadius * Math.cos(nextAngle);
+                            const nextY = canvas.height / 2 + nextRadius * Math.sin(nextAngle) * 0.6;
+                            
+                            ctx.strokeStyle = LIGHT_BLUE;
+                            ctx.globalAlpha = sparkAlpha * 0.4;
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(nextX, nextY);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            animationTime = 0;
+            currentNode = 0;
+            activeNodes = [];
+            particles = [];
+            dataFlows = [];
+            isPaused = false;
+            showEnding = false;
+            endingAlpha = 0;
+            showEndingTimer = -1;
+            
+            // 重置进化行走者
+            evolutionWalker.x = 50;
+            evolutionWalker.targetX = 50;
+            evolutionWalker.currentStage = 'homo_sapiens';
+            evolutionWalker.isWalking = false;
+            evolutionWalker.scale = 1;
+            evolutionWalker.glowIntensity = 0;
+            
+            // 重置科学家显示
+            scientistDisplay.displayTime = 0;
+            scientistDisplay.fadeAlpha = 0;
+        }
+        
+        // 暂停/继续
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+        
+        // 调整速度
+        function toggleSpeed() {
+            animationSpeed = animationSpeed === 1 ? 2 : animationSpeed === 2 ? 0.5 : 1;
+            const button = event.target;
+            button.textContent = `速度: ${animationSpeed === 0.5 ? '慢' : animationSpeed === 1 ? '正常' : '快'}`;
+        }
+        
+        // 窗口调整大小
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 100;
+            
+            // 重新计算节点位置
+            milestones.forEach((milestone, index) => {
+                milestone.x = canvas.width * (0.12 + index * 0.1);
+            });
+            
+            // 重新计算进化行走者位置
+            evolutionWalker.y = canvas.height * 0.7;
+        });
+        
+        // 启动动画
+        animate();
+    </script>
+</body>
+</html>
